@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception
 
-  before_filter :user_access_log
+  #before_filter :user_access_log
 
 
   def alipay_client

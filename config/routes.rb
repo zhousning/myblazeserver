@@ -21,24 +21,26 @@ Rails.application.routes.draw do
   #end
 
   resources :wx_users, :only => [] do
-    get :get_userid, :on => :collection
+    post :get_userid, :on => :collection
   end
 
-  resources :day_pdts, :only => [:index, :show] do
-    get :upreport, :on => :member
-    get :verifying, :on => :member
-    get :rejected, :on => :member
+  resources :day_pdts, :only => [] do
     get :verify_index, :on => :collection
-    get :verify_show, :on => :member
-    get :cmp_verifying, :on => :member
-    get :cmp_rejected, :on => :member
-    get :cmp_verify_index, :on => :collection
-    get :cmp_verify_show, :on => :member
-    get :emp_sync, :on => :member
-    get :only_emp_sync, :on => :collection
   end
-
   resources :factories, :only => [:edit, :update] do
+    resources :day_pdts, :only => [:index, :show] do
+      get :upreport, :on => :member
+      get :verifying, :on => :member
+      get :rejected, :on => :member
+      get :verify_index, :on => :collection
+      get :verify_show, :on => :member
+      get :cmp_verifying, :on => :member
+      get :cmp_rejected, :on => :member
+      get :cmp_verify_index, :on => :collection
+      get :cmp_verify_show, :on => :member
+      get :emp_sync, :on => :member
+      get :only_emp_sync, :on => :collection
+    end
     resources :day_pdt_rpts, :only => [:index, :show] do
       get :produce_report, :on => :member
       get :xls_day_download, :on => :member
