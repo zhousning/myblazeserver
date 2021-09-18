@@ -1,0 +1,95 @@
+.container-fluid
+  .row.justify-content-sm-center
+    .col-sm-12
+      = form_for @day_pdt, :url => "/factories/#{idencode(@factory.id)}/day_pdts/#{@day_pdt.id ? idencode(@day_pdt.id) : ''}", :builder => WebsiteFormBuilder, :html => {:id => 'day-pdt-form', :'data-parsley-validate' => true} do |f|
+        - if flash[:warning]
+          #error_explanation.alert.alert-danger.alert-dismissible.fade.show
+            %button.close{"aria-label" => "Close", "data-dismiss" => "alert", :type => "button"}
+              %span{"aria-hidden" => "true"} x 
+            = flash[:warning]
+        - if @day_pdt.errors.any?
+          #error_explanation.alert.alert-danger.alert-dismissible.fade.show
+            %button.close{"aria-label" => "Close", "data-dismiss" => "alert", :type => "button"}
+              %span{"aria-hidden" => "true"} x 
+            %h2= "#{pluralize(@day_pdt.errors.count, "个错误")} "
+            %ul
+              - @day_pdt.errors.full_messages.each do |msg|
+                %li= msg
+      
+        = f.hidden_field :pdt_date
+        .row
+          .col-sm-12
+            %h2.text-center
+              = image_tag "gykg.jpg"
+              = @day_pdt.name
+          .col-3.offset-6
+            .form-group.row
+              = f.label Setting.day_pdts.signer, :class => "col-sm-3 col-form-label text-right"
+              .col-sm-6
+                = f.text_field :signer, :class => "form-control rounded-0" , :required => true
+          .col-md-8.offset-md-2.p-5.border
+            #flash_explanation
+            .row
+              -#
+                .col-6
+                  .form-group.row
+                    = f.label Setting.day_pdts.pdt_date, :class => "col-sm-3 col-form-label text-right"
+                    .col-sm-6
+                      = f.date_field :pdt_date, :class => "form-control rounded-0" , :id => "day-pdt-date", :required => true, :min => Date.new(2021, 9, 01), :max => Date.today-1
+              .col-6
+                .form-group.row
+                  = f.label Setting.day_pdts.min_temper, :class => "col-sm-3 col-form-label text-right"
+                  .col-sm-6
+                    = f.number_field :min_temper, :class => "form-control rounded-0" , :required => true, :step => "any" 
+              .col-6
+                .form-group.row
+                  = f.label Setting.day_pdts.max_temper, :class => "col-sm-3 col-form-label text-right"
+                  .col-sm-6
+                    = f.number_field :max_temper, :class => "form-control rounded-0", :required => true, :step => "any" 
+              .col-6
+                .form-group.row
+                  = f.label Setting.day_pdts.weather, :class => "col-sm-3 col-form-label text-right"
+                  .col-sm-6
+                    = f.text_field :weather, :class => "form-control rounded-0" , :required => true
+
+            = f.fields_for :inf_qlty do |inf_qlty|
+              = render 'inf_qlty_fields', f: inf_qlty 
+
+            = f.fields_for :eff_qlty do |eff_qlty|
+              = render 'eff_qlty_fields', f: eff_qlty 
+
+            = f.fields_for :sed_qlty do |sed_qlty|
+              = render 'sed_qlty_fields', f: sed_qlty 
+      
+            = f.fields_for :pdt_sum do |pdt_sum|
+              = render 'pdt_sum_fields', f: pdt_sum 
+
+            = f.fields_for :tspmuds do |tspmud|
+              = render 'tspmud_fields', f: tspmud 
+            .links.mt-3
+              = link_to_add_association "添加污泥处理", f, :tspmuds, :class => "button button-small button-royal"
+          
+            = f.fields_for :chemicals do |chemical|
+              = render 'chemical_fields', f: chemical
+            .links.mt-3
+              = link_to_add_association "添加药剂", f, :chemicals, :class => "button button-small button-caution"
+          
+            .form-group.row.my-3
+              .col-sm-12
+                = f.text_area :desc, :class => "form-control rounded-0", :rows => "10", :placeholder => "其他说明" 
+              
+      
+      
+      
+            .form-group.row
+              .col-9
+                .row
+                  = f.fields_for :enclosures do |enclosure|
+                    = render 'enclosure_fields', f: enclosure
+                  .links
+                    = link_to_add_association "添加图片", f, :enclosures, :class => "button button-small button-primary"
+      
+      
+            .form-group.row
+              .col-3.offset-3
+                = f.submit '保存', :class => "button  button-small button-action"
