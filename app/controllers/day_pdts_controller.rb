@@ -9,33 +9,28 @@ class DayPdtsController < ApplicationController
     results = []
     user = User.find_by_number(params[:openid])
     @factories = user.factories
-    #厂区运营数据审核 0
-    if user.has_role?(Setting.roles.day_pdt_verify)
-      @factories.each do |factory|
-        @day_pdts = factory.day_pdts.where(:state => [Setting.day_pdts.verifying, Setting.day_pdts.rejected, Setting.day_pdts.cmp_verifying, Setting.day_pdts.cmp_rejected]).order(:state)
-        @day_pdts.each do |day_pdt|
-          results << {
-            name: day_pdt.pdt_date.to_s + factory.name,
-            state: day_pdt.state,
-            fct: idencode(factory.id),
-            jd: 0,
-            day_pdt: idencode(day_pdt.id)
-          }
-        end
-      end
-    #公司运营数据审核 1
-    elsif user.has_role?(Setting.roles.day_pdt_cmp_verify)
-      @factories.each do |factory|
-        @day_pdts = factory.day_pdts.where(:state => [Setting.day_pdts.cmp_verifying, Setting.day_pdts.cmp_rejected, Setting.day_pdts.verifying, Setting.day_pdts.rejected]).order(:state)
-        @day_pdts.each do |day_pdt|
-          results << {
-            name: day_pdt.pdt_date.to_s + factory.name,
-            state: day_pdt.state,
-            fct: idencode(factory.id),
-            jd: 1,
-            day_pdt: idencode(day_pdt.id)
-          }
-        end
+
+    #角色代码jd厂区运营数据审核 0 公司运营数据审核 1 厂区运营数据填报 2 
+    jd = nil
+    if user.has_role?(Setting.roles.day_pdt_verify) 
+      jd = 0
+    elsif user.has_role?(Setting.roles.day_pdt_cmp_verify) 
+      jd = 1
+    elsif user.has_role?(Setting.roles.day_pdt) 
+      jd = 2 
+    end
+
+    
+    @factories.each do |factory|
+      @day_pdts = factory.day_pdts.where('state != ?', Setting.day_pdts.complete).order('pdt_date DESC')
+      @day_pdts.each do |day_pdt|
+        results << {
+          name: day_pdt.pdt_date.to_s + factory.name,
+          state: day_pdt.state,
+          fct: idencode(factory.id),
+          jd: jd,
+          day_pdt: idencode(day_pdt.id)
+        }
       end
     end
     respond_to do |f|
@@ -72,6 +67,7 @@ class DayPdtsController < ApplicationController
     end
 
 	  results = { 
+      state: @day_pdt.state,
       cm_inf_cod:  inf.cod,
       cm_inf_bod:  inf.bod,
       cm_inf_nhn:  inf.nhn,
@@ -204,36 +200,6 @@ class DayPdtsController < ApplicationController
     end
   end
 
-  def index
-    @day_pdt = DayPdt.new
-    @factory = my_factory
-    @day_pdts = @factory.day_pdts.where(:state => [Setting.day_pdts.ongoing, Setting.day_pdts.verifying, Setting.day_pdts.rejected, Setting.day_pdts.cmp_verifying, Setting.day_pdts.cmp_rejected]).order('pdt_date DESC').page( params[:page]).per( Setting.systems.per_page )  if @factory
-  end
-   
-  def show
-    @factory = my_factory
-    @day_pdt = @factory.day_pdts.find(iddecode(params[:id]))
-  end
-
-  def verifying
-    @factory = my_factory
-    @day_pdt = @factory.day_pdts.find(iddecode(params[:id]))
-    @day_pdt.verifying
-    redirect_to factory_day_pdt_path(idencode(@factory.id), idencode(@day_pdt.id)) 
-  end
-  
-  def cmp_verify_index
-    @factory = my_factory
-
-    @day_pdts = @factory.day_pdts.where(:state => [Setting.day_pdts.verifying, Setting.day_pdts.rejected, Setting.day_pdts.cmp_verifying, Setting.day_pdts.cmp_rejected]).order("pdt_date DESC").page( params[:page]).per( Setting.systems.per_page ) if @factory
-  end
-  
-  def cmp_verify_show
-    user = User.find_by_number(params[:openid])
-    @factory = user.factories.find(iddecode(params[:factory_id]))
-    @day_pdt = @factory.day_pdts.find(iddecode(params[:id]))
-  end
-
   def cmp_verifying
     user = User.find_by_number(params[:openid])
     @factory = user.factories.find(iddecode(params[:factory_id]))
@@ -267,7 +233,38 @@ class DayPdtsController < ApplicationController
       end
     end
   end
+############################################3
+  def verifying
+    @factory = my_factory
+    @day_pdt = @factory.day_pdts.find(iddecode(params[:id]))
+    @day_pdt.verifying
+    redirect_to factory_day_pdt_path(idencode(@factory.id), idencode(@day_pdt.id)) 
+  end
+  
+  
+  def cmp_verify_show
+    user = User.find_by_number(params[:openid])
+    @factory = user.factories.find(iddecode(params[:factory_id]))
+    @day_pdt = @factory.day_pdts.find(iddecode(params[:id]))
+  end
 
+
+  def index
+    @day_pdt = DayPdt.new
+    @factory = my_factory
+    @day_pdts = @factory.day_pdts.where(:state => [Setting.day_pdts.ongoing, Setting.day_pdts.verifying, Setting.day_pdts.rejected, Setting.day_pdts.cmp_verifying, Setting.day_pdts.cmp_rejected]).order('pdt_date DESC').page( params[:page]).per( Setting.systems.per_page )  if @factory
+  end
+   
+  def show
+    @factory = my_factory
+    @day_pdt = @factory.day_pdts.find(iddecode(params[:id]))
+  end
+
+  def cmp_verify_index
+    @factory = my_factory
+
+    @day_pdts = @factory.day_pdts.where(:state => [Setting.day_pdts.verifying, Setting.day_pdts.rejected, Setting.day_pdts.cmp_verifying, Setting.day_pdts.cmp_rejected]).order("pdt_date DESC").page( params[:page]).per( Setting.systems.per_page ) if @factory
+  end
 
   def new
     @factory = my_factory

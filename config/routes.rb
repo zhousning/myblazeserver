@@ -27,96 +27,98 @@ Rails.application.routes.draw do
   resources :day_pdts, :only => [] do
     get :verify_index, :on => :collection
   end
-  resources :factories, :only => [:edit, :update] do
-    resources :day_pdts, :only => [:index, :show] do
-      get :upreport, :on => :member
-      get :verifying, :on => :member
-      get :rejected, :on => :member
-      get :verify_index, :on => :collection
+  #resources :factories, :only => [:edit, :update] do
+  #  resources :day_pdts, :only => [:index, :show] do
+  resources :factories, :only => [] do
+    resources :day_pdts, :only => [] do
       get :verify_show, :on => :member
+      get :rejected, :on => :member
+      get :upreport, :on => :member
       get :cmp_verifying, :on => :member
       get :cmp_rejected, :on => :member
-      get :cmp_verify_index, :on => :collection
-      get :cmp_verify_show, :on => :member
-      get :emp_sync, :on => :member
-      get :only_emp_sync, :on => :collection
+      #get :verify_index, :on => :collection
+      #get :cmp_verify_index, :on => :collection
+      #get :cmp_verify_show, :on => :member
+      #get :verifying, :on => :member
+      #get :emp_sync, :on => :member
+      #get :only_emp_sync, :on => :collection
     end
-    resources :day_pdt_rpts, :only => [:index, :show] do
-      get :produce_report, :on => :member
-      get :xls_day_download, :on => :member
-    end
-    resources :analyses, :only => [] do
-      get :month_compare, :on => :collection
-    end
-    resources :mth_pdt_rpts, :only => [:index, :edit, :update, :show] do
-      get :produce_report, :on => :member
-      get :mth_rpt_create, :on => :collection
-      get :download_report, :on => :member
-      get :upreport, :on => :member
-      get :verifying, :on => :member
-      get :rejected, :on => :member
-      get :verify_index, :on => :collection
-      get :verify_show, :on => :member
-      get :cmp_verifying, :on => :member
-      get :cmp_rejected, :on => :member
-      get :cmp_verify_index, :on => :collection
-      get :cmp_verify_show, :on => :member
-      get :mth_report_finish_index, :on => :collection
-      get :mth_report_finish_show, :on => :member
-      get :xls_mth_download, :on => :member
-      get :download_append, :on => :member
-    end
-    resources :emp_infs, :only => [:index, :create]  do
-      get :watercms_flow, :on => :collection
-      post :parse_fct_excel, :on => :collection
-      get :fct_edit, :on => :member
-      patch :fct_update, :on => :member
-      delete :fct_destroy, :on => :member
-    end
-    resources :emp_effs, :only => [:index, :create] do
-      get :watercms_flow, :on => :collection
-      post :parse_fct_excel, :on => :collection
-      get :fct_edit, :on => :member
-      patch :fct_update, :on => :member
-      delete :fct_destroy, :on => :member
-    end
+    #resources :day_pdt_rpts, :only => [:index, :show] do
+    #  get :produce_report, :on => :member
+    #  get :xls_day_download, :on => :member
+    #end
+    #resources :analyses, :only => [] do
+    #  get :month_compare, :on => :collection
+    #end
+    #resources :mth_pdt_rpts, :only => [:index, :edit, :update, :show] do
+    #  get :produce_report, :on => :member
+    #  get :mth_rpt_create, :on => :collection
+    #  get :download_report, :on => :member
+    #  get :upreport, :on => :member
+    #  get :verifying, :on => :member
+    #  get :rejected, :on => :member
+    #  get :verify_index, :on => :collection
+    #  get :verify_show, :on => :member
+    #  get :cmp_verifying, :on => :member
+    #  get :cmp_rejected, :on => :member
+    #  get :cmp_verify_index, :on => :collection
+    #  get :cmp_verify_show, :on => :member
+    #  get :mth_report_finish_index, :on => :collection
+    #  get :mth_report_finish_show, :on => :member
+    #  get :xls_mth_download, :on => :member
+    #  get :download_append, :on => :member
+    #end
+    #resources :emp_infs, :only => [:index, :create]  do
+    #  get :watercms_flow, :on => :collection
+    #  post :parse_fct_excel, :on => :collection
+    #  get :fct_edit, :on => :member
+    #  patch :fct_update, :on => :member
+    #  delete :fct_destroy, :on => :member
+    #end
+    #resources :emp_effs, :only => [:index, :create] do
+    #  get :watercms_flow, :on => :collection
+    #  post :parse_fct_excel, :on => :collection
+    #  get :fct_edit, :on => :member
+    #  patch :fct_update, :on => :member
+    #  delete :fct_destroy, :on => :member
+    #end
   end
 
-  resources :emp_infs do
-    post :parse_excel, :on => :collection
-    get :xls_download, :on => :collection
-    get :watercms_flow, :on => :collection
-    get :grp_index, :on => :collection
-  end
+  #resources :emp_infs do
+  #  post :parse_excel, :on => :collection
+  #  get :xls_download, :on => :collection
+  #  get :watercms_flow, :on => :collection
+  #  get :grp_index, :on => :collection
+  #end
 
-  resources :emp_effs do
-    post :parse_excel, :on => :collection
-    get :xls_download, :on => :collection
-    get :watercms_flow, :on => :collection
-    get :grp_index, :on => :collection
-  end
+  #resources :emp_effs do
+  #  post :parse_excel, :on => :collection
+  #  get :xls_download, :on => :collection
+  #  get :watercms_flow, :on => :collection
+  #  get :grp_index, :on => :collection
+  #end
 
-  resources :day_pdt_rpts, :only => [] do
-    get :sglfct_statistic, :on => :collection
-    get :sglfct_stc_cau, :on => :collection
-    get :static_pool, :on => :collection
-    get :radar_chart, :on => :collection
-    get :new_quota_chart, :on => :collection
-  end
-  resources :analyses, :only => [] do
-    get :compare, :on => :collection
-    get :area_time, :on => :collection
-    get :area_time_compare, :on => :collection
-  end
-  resources :reports, :only => [:index] do
-    get :day_report, :on => :collection
-    get :mth_report, :on => :collection
-    get :mth_report_show, :on => :member
-    get :xls_day_download, :on => :collection
-    get :xls_mth_download, :on => :collection
-    get :query_day_reports, :on => :collection
-    get :query_mth_reports, :on => :collection
-  end
+  #resources :day_pdt_rpts, :only => [] do
+  #  get :sglfct_statistic, :on => :collection
+  #  get :sglfct_stc_cau, :on => :collection
+  #  get :static_pool, :on => :collection
+  #  get :radar_chart, :on => :collection
+  #  get :new_quota_chart, :on => :collection
+  #end
+  #resources :analyses, :only => [] do
+  #  get :compare, :on => :collection
+  #  get :area_time, :on => :collection
+  #  get :area_time_compare, :on => :collection
+  #end
+  #resources :reports, :only => [:index] do
+  #  get :day_report, :on => :collection
+  #  get :mth_report, :on => :collection
+  #  get :mth_report_show, :on => :member
+  #  get :xls_day_download, :on => :collection
+  #  get :xls_mth_download, :on => :collection
+  #  get :query_day_reports, :on => :collection
+  #  get :query_mth_reports, :on => :collection
+  #end
 
 end
 

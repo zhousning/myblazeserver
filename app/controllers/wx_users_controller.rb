@@ -7,7 +7,8 @@ class WxUsersController < ApplicationController
 
     if resource.valid_password?(params[:password])
       openid = resource.number
-      return render :json => {:success => true, :openid => openid}
+      user_name = resource.name
+      return render :json => {:success => true, :openid => openid, :user_name => user_name}
     else
       return render :json => {:success => false}
     end
