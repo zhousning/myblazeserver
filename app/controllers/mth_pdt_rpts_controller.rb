@@ -16,6 +16,272 @@ class MthPdtRptsController < ApplicationController
     end
   end
 
+  def verify_index
+    results = []
+    user = User.find_by_number(params[:openid])
+    @factories = user.factories
+
+    #角色代码jd厂区月报表审核 0 公司月报表审核 1 厂区月报表填报 2 
+    jd = nil
+    if user.has_role?(Setting.roles.mth_pdt_rpt_verify) 
+      jd = 0
+    elsif user.has_role?(Setting.roles.mth_pdt_rpt_cmp_verify) 
+      jd = 1
+    elsif user.has_role?(Setting.roles.mth_pdt_rpt) 
+      jd = 2 
+    end
+
+    
+    @factories.each do |factory|
+      @mth_pdt_rpts = factory.mth_pdt_rpts.where('state != ?', Setting.mth_pdt_rpts.complete).order('pdt_date DESC')
+      @mth_pdt_rpts.each do |mth_pdt_rpt|
+        results << {
+          name: mth_pdt_rpt.pdt_date.to_s + factory.name,
+          state: mth_pdt_rpt.state,
+          fct: idencode(factory.id),
+          jd: jd,
+          mth_pdt_rpt: idencode(mth_pdt_rpt.id)
+        }
+      end
+    end
+    respond_to do |f|
+      f.json{ render :json => {:results => results}.to_json}
+    end
+  end
+
+  def verify_show
+    @factory = my_factory
+    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
+    user = User.find_by_number(params[:openid])
+    @factory = user.factories.find(iddecode(params[:factory_id]))
+    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
+    chemicals = []
+    @mth_pdt_rpt.mth_chemicals.each do |chemical|
+      chemicals << {
+        name    : chemicals_hash[chemical.name]
+        unprice : chemical.unprice
+        cmptc   : chemical.cmptc
+        dosage  : chemical.dosage
+        act_dos : chemical.act_dosage
+        avg_dos : chemical.avg_dosage
+        dosptc  : chemical.dosptc
+        per_cos : chemical.per_cost
+      }
+    end
+
+    inf = {
+      cod: @mth_pdt_rpt.month_cod.avg_inf
+      bod: @mth_pdt_rpt.month_bod.avg_inf
+      nhn: @mth_pdt_rpt.month_nhn.avg_inf
+      tn: @mth_pdt_rpt.month_tn.avg_inf
+      tp: @mth_pdt_rpt.month_tp.avg_inf
+      ss: @mth_pdt_rpt.month_ss.avg_inf
+    }
+    eff = {
+      cod: @mth_pdt_rpt.month_cod.avg_eff
+      bod: @mth_pdt_rpt.month_bod.avg_eff
+      nhn: @mth_pdt_rpt.month_nhn.avg_eff
+      tn: @mth_pdt_rpt.month_tn.avg_eff
+      tp: @mth_pdt_rpt.month_tp.avg_eff
+      ss: @mth_pdt_rpt.month_ss.avg_eff
+    }
+    emr = {
+      cod: @mth_pdt_rpt.month_cod.emr
+      bod: @mth_pdt_rpt.month_bod.emr
+      nhn: @mth_pdt_rpt.month_nhn.emr
+      tn: @mth_pdt_rpt.month_tn.emr
+      tp: @mth_pdt_rpt.month_tp.emr
+      ss: @mth_pdt_rpt.month_ss.emr
+    }
+    avg_emq = {
+      cod: @mth_pdt_rpt.month_cod.avg_emq
+      bod: @mth_pdt_rpt.month_bod.avg_emq
+      nhn: @mth_pdt_rpt.month_nhn.avg_emq
+      tn: @mth_pdt_rpt.month_tn.avg_emq
+      tp: @mth_pdt_rpt.month_tp.avg_emq
+      ss: @mth_pdt_rpt.month_ss.avg_emq
+    }
+    emq = {
+      cod: @mth_pdt_rpt.month_cod.emq
+      bod: @mth_pdt_rpt.month_bod.emq
+      nhn: @mth_pdt_rpt.month_nhn.emq
+      tn: @mth_pdt_rpt.month_tn.emq
+      tp: @mth_pdt_rpt.month_tp.emq
+      ss: @mth_pdt_rpt.month_ss.emq
+    }
+    end_emq = {
+      cod: @mth_pdt_rpt.month_cod.end_emq
+      bod: @mth_pdt_rpt.month_bod.end_emq
+      nhn: @mth_pdt_rpt.month_nhn.end_emq
+      tn: @mth_pdt_rpt.month_tn.end_emq
+      tp: @mth_pdt_rpt.month_tp.end_emq
+      ss: @mth_pdt_rpt.month_ss.end_emq
+    }
+    yoy = {
+      cod: @mth_pdt_rpt.month_cod.yoy
+      bod: @mth_pdt_rpt.month_bod.yoy
+      nhn: @mth_pdt_rpt.month_nhn.yoy
+      tn: @mth_pdt_rpt.month_tn.yoy
+      tp: @mth_pdt_rpt.month_tp.yoy
+      ss: @mth_pdt_rpt.month_ss.yoy
+    }
+    mom = {
+      cod: @mth_pdt_rpt.month_cod.mom
+      bod: @mth_pdt_rpt.month_bod.mom
+      nhn: @mth_pdt_rpt.month_nhn.mom
+      tn: @mth_pdt_rpt.month_tn.mom
+      tp: @mth_pdt_rpt.month_tp.mom
+      ss: @mth_pdt_rpt.month_ss.mom
+    }
+    power = {
+      power: @mth_pdt_rpt.month_power.power
+      end_power: @mth_pdt_rpt.month_power.end_power
+      bom: @mth_pdt_rpt.month_power.bom
+      yoy_power: @mth_pdt_rpt.month_power.yoy_power
+      mom_power: @mth_pdt_rpt.month_power.mom_power
+      yoy_bom: @mth_pdt_rpt.month_power.yoy_bom
+      mom_bom: @mth_pdt_rpt.month_power.mom_bom
+    }
+    mud = {
+      inmud: @mth_pdt_rpt.month_mud.inmud
+      end_inmud: @mth_pdt_rpt.month_mud.end_inmud
+      outmud: @mth_pdt_rpt.month_mud.outmud
+      end_outmud: @mth_pdt_rpt.month_mud.end_outmud
+      yoy: @mth_pdt_rpt.month_mud.yoy
+      mom: @mth_pdt_rpt.month_mud.mom
+    }
+    md = {
+      mdrcy: @mth_pdt_rpt.month_md.mdrcy
+      end_mdrcy: @mth_pdt_rpt.month_md.end_mdrcy
+      mdsell: @mth_pdt_rpt.month_md.mdsell
+      end_mdsell: @mth_pdt_rpt.month_md.end_mdsell
+      yoy_mdrcy: @mth_pdt_rpt.month_md.yoy_mdrcy
+      mom_mdrcy: @mth_pdt_rpt.month_md.mom_mdrcy
+      yoy_mdsell: @mth_pdt_rpt.month_md.yoy_mdsell
+      mom_mdsell: @mth_pdt_rpt.month_md.mom_mdsell
+    }
+
+	  results = { 
+      state: @mth_pdt_rpt.state,
+      outflow: @mth_pdt_rpt.outflow,
+      avg_outflow: @mth_pdt_rpt.avg_outflow,
+      end_outflow: @mth_pdt_rpt.end_outflow,
+      inf: inf,
+      eff: eff,
+      emr: emr,
+      avg_emq: avg_emq,
+      emq: emq,
+      end_emq: end_emq,
+      yoy: yoy,
+      mom: mom,
+      md: md,
+      mud: mud,
+      power: power
+    }
+    respond_to do |f|
+      f.json{ render :json => {:results => results}.to_json}
+    end
+  end
+
+  def rejected
+    user = User.find_by_number(params[:openid])
+    @factory = user.factories.find(iddecode(params[:factory_id]))
+    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
+    if user.has_role?(Setting.roles.mth_pdt_rpt_verify)
+      if @mth_pdt_rpt.rejected
+        result = {:status => 'success', :state => @mth_pdt_rpt.state}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
+      else
+        result = {:status => 'fail'}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
+      end
+    elsif user.has_role?(Setting.roles.mth_pdt_rpt_cmp_verify)
+      if @mth_pdt_rpt.cmp_rejected
+        result = {:status => 'success', :state => @mth_pdt_rpt.state}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
+      else
+        result = {:status => 'fail'}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
+      end
+    end
+  end
+
+  def upreport
+    user = User.find_by_number(params[:openid])
+    @factory = user.factories.find(iddecode(params[:factory_id]))
+    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
+    if user.has_role?(Setting.roles.mth_pdt_rpt_cmp_verify)
+      if @mth_pdt_rpt.complete
+        result = {:status => 'success', :state => @mth_pdt_rpt.state}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
+      else
+        result = {:status => 'fail'}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
+      end
+    end
+  end
+
+  def cmp_verifying
+    user = User.find_by_number(params[:openid])
+    @factory = user.factories.find(iddecode(params[:factory_id]))
+    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
+    if user.has_role?(Setting.roles.mth_pdt_rpt_verify)
+      if @mth_pdt_rpt.cmp_verifying
+        result = {:status => 'success', :state => @mth_pdt_rpt.state}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
+      else
+        result = {:status => 'fail'}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
+      end
+    end
+  end
+  
+  #######################################
+    
+  def cmp_rejected
+    user = User.find_by_number(params[:openid])
+    @factory = user.factories.find(iddecode(params[:factory_id]))
+    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
+    if @mth_pdt_rpt.cmp_rejected
+      result = {:status => 'success', :state => @mth_pdt_rpt.state}
+      respond_to do |f|
+        f.json{ render :json => {:result => result}.to_json}
+      end
+    else
+      result = {:status => 'fail'}
+      respond_to do |f|
+        f.json{ render :json => {:result => result}.to_json}
+      end
+    end
+  end
+
+  def cmp_verify_index
+    @factory = my_factory
+
+    @mth_pdt_rpts = @factory.mth_pdt_rpts.where(:state => [Setting.mth_pdt_rpts.verifying, Setting.mth_pdt_rpts.rejected, Setting.mth_pdt_rpts.cmp_verifying, Setting.mth_pdt_rpts.cmp_rejected]).order("start_date DESC").page( params[:page]).per( Setting.systems.per_page ) if @factory
+  end
+  
+  def cmp_verify_show
+    @factory = my_factory
+    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
+  end
+
   def index
     @mth_pdt_rpt = MthPdtRpt.new
     @factory = my_factory
@@ -32,17 +298,6 @@ class MthPdtRptsController < ApplicationController
    
   end
 
-  def verify_index
-    @factory = my_factory
-
-    @mth_pdt_rpts = @factory.mth_pdt_rpts.where(:state => [Setting.mth_pdt_rpts.verifying, Setting.mth_pdt_rpts.rejected, Setting.mth_pdt_rpts.cmp_verifying, Setting.mth_pdt_rpts.cmp_rejected]).order("start_date DESC").page( params[:page]).per( Setting.systems.per_page ) if @factory
-  end
-
-  def verify_show
-    @factory = my_factory
-    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
-  end
-
   def verifying
     @factory = my_factory
     @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
@@ -50,54 +305,6 @@ class MthPdtRptsController < ApplicationController
     redirect_to factory_mth_pdt_rpt_path(idencode(@factory.id), idencode(@mth_pdt_rpt.id)) 
   end
   
-  def rejected
-    @factory = my_factory
-    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
-    @mth_pdt_rpt.rejected
-    redirect_to verify_show_factory_mth_pdt_rpt_path(idencode(@factory.id), idencode(@mth_pdt_rpt.id)) 
-  end
-
-  def cmp_verify_index
-    @factory = my_factory
-
-    @mth_pdt_rpts = @factory.mth_pdt_rpts.where(:state => [Setting.mth_pdt_rpts.verifying, Setting.mth_pdt_rpts.rejected, Setting.mth_pdt_rpts.cmp_verifying, Setting.mth_pdt_rpts.cmp_rejected]).order("start_date DESC").page( params[:page]).per( Setting.systems.per_page ) if @factory
-    def cal_per_cost(mth_pdt_rpt)
-      inflow = mth_pdt_rpt.outflow
-      per_cost = 0
-      mth_pdt_rpt.mth_chemicals.each do |c|
-        per_cost += c.update_ptc(inflow)
-      end
-      mth_pdt_rpt.update_per_cost(per_cost)
-    end
-
-  end
-  
-  def cmp_verify_show
-    @factory = my_factory
-    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
-  end
-
-  def cmp_verifying
-    @factory = my_factory
-    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
-    @mth_pdt_rpt.cmp_verifying
-    redirect_to verify_show_factory_mth_pdt_rpt_path(idencode(@factory.id), idencode(@mth_pdt_rpt.id)) 
-  end
-  
-  def cmp_rejected
-    @factory = my_factory
-    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
-    @mth_pdt_rpt.cmp_rejected
-    redirect_to cmp_verify_show_factory_mth_pdt_rpt_path(idencode(@factory.id), idencode(@mth_pdt_rpt.id)) 
-  end
-
-  def upreport
-    @factory = my_factory
-    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
-
-    @mth_pdt_rpt.complete
-    redirect_to cmp_verify_show_factory_mth_pdt_rpt_path(idencode(@factory.id), idencode(@mth_pdt_rpt.id)) 
-  end
 
   def mth_report_finish_index
     @factory = my_factory

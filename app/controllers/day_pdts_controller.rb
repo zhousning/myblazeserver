@@ -204,19 +204,22 @@ class DayPdtsController < ApplicationController
     user = User.find_by_number(params[:openid])
     @factory = user.factories.find(iddecode(params[:factory_id]))
     @day_pdt = @factory.day_pdts.find(iddecode(params[:id]))
-    if @day_pdt.cmp_verifying
-      result = {:status => 'success', :state => @day_pdt.state}
-      respond_to do |f|
-        f.json{ render :json => {:result => result}.to_json}
-      end
-    else
-      result = {:status => 'fail'}
-      respond_to do |f|
-        f.json{ render :json => {:result => result}.to_json}
+    if user.has_role?(Setting.roles.day_pdt_verify)
+      if @day_pdt.cmp_verifying
+        result = {:status => 'success', :state => @day_pdt.state}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
+      else
+        result = {:status => 'fail'}
+        respond_to do |f|
+          f.json{ render :json => {:result => result}.to_json}
+        end
       end
     end
   end
   
+############################################3
   def cmp_rejected
     user = User.find_by_number(params[:openid])
     @factory = user.factories.find(iddecode(params[:factory_id]))
@@ -233,7 +236,6 @@ class DayPdtsController < ApplicationController
       end
     end
   end
-############################################3
   def verifying
     @factory = my_factory
     @day_pdt = @factory.day_pdts.find(iddecode(params[:id]))
