@@ -31,10 +31,6 @@ class DayPdtRptsController < ApplicationController
     @day_pdt_rpt = @factory.day_pdt_rpts.find(iddecode(params[:id]))
     @day_rpt_stc = @day_pdt_rpt.day_rpt_stc
 
-    inf = @day_pdt.inf_qlty
-    eff = @day_pdt.eff_qlty
-    sed = @day_pdt.sed_qlty
-    pdt_sum = @day_pdt.pdt_sum
     chemicals = []
     @day_pdt_rpt.chemicals.each do |chemical|
       chemicals << {
@@ -56,48 +52,48 @@ class DayPdtRptsController < ApplicationController
     end
 
 	  results = { 
-      state: @day_pdt.state,
-      cm_inf_cod:  inf.cod,
-      cm_inf_bod:  inf.bod,
-      cm_inf_nhn:  inf.nhn,
-      cm_inf_tn:  inf.tn,
-      cm_inf_tp:  inf.tp,
-      cm_inf_ss:  inf.ss,
-      cm_inf_ph:  inf.ph,
-      on_inf_cod:  inf.asy_cod,
-      on_inf_nhn:  inf.asy_nhn,
-      on_inf_tn:  inf.asy_tn,
-      on_inf_tp:  inf.asy_tp,
-	    cm_eff_cod:  eff.cod,
-      cm_eff_bod:  eff.bod,
-      cm_eff_nhn:  eff.nhn,
-      cm_eff_tn:  eff.tn,
-      cm_eff_tp:  eff.tp,
-      cm_eff_ss:  eff.ss,
-      cm_eff_ph:  eff.ph,
-      on_eff_cod:  eff.asy_cod,
-      on_eff_nhn:  eff.asy_nhn,
-      on_eff_tn:  eff.asy_tn,
-      on_eff_tp:  eff.asy_tp,
-	    cm_sed_cod:  sed.cod,
-      cm_sed_bod:  sed.bod,
-      cm_sed_nhn:  sed.nhn,
-      cm_sed_tn:  sed.tn,
-      cm_sed_tp:  sed.tp,
-      cm_sed_ss:  sed.ss,
-      cm_sed_ph:  sed.ph,
-	    inflow:  pdt_sum.inflow,
-      outflow:  pdt_sum.outflow,
-      power:  pdt_sum.power,
-      inmud:  pdt_sum.inmud,
-      outmud:  pdt_sum.outmud,
-      mst:  pdt_sum.mst,
-      md:  pdt_sum.mdflow,
-      mdrcy:  pdt_sum.mdrcy,
-      mdsell:  pdt_sum.mdsell,
-      desc:  @day_pdt_rpt.desc || '',          
+      cm_inf_cod:  @day_pdt_rpt.inf_asy_cod,
+      cm_inf_bod:  @day_pdt_rpt.inf_qlty_bod,
+      cm_inf_nhn:  @day_pdt_rpt.inf_asy_nhn,
+      cm_inf_tn:   @day_pdt_rpt.inf_asy_tn,
+      cm_inf_tp:   @day_pdt_rpt.inf_asy_tp,
+      cm_inf_ss:   @day_pdt_rpt.inf_qlty_ss,
+      cm_inf_ph:   @day_pdt_rpt.inf_qlty_ph,
+      on_inf_cod:  @day_pdt_rpt.inf_qlty_cod,
+      on_inf_nhn:  @day_pdt_rpt.inf_qlty_nhn,
+      on_inf_tn:   @day_pdt_rpt.inf_qlty_tn,
+      on_inf_tp:   @day_pdt_rpt.inf_qlty_tp,
+	    cm_eff_cod:  @day_pdt_rpt.eff_asy_cod,
+      cm_eff_bod:  @day_pdt_rpt.eff_qlty_bod,
+      cm_eff_nhn:  @day_pdt_rpt.eff_asy_nhn,
+      cm_eff_tn:   @day_pdt_rpt.eff_asy_tn,
+      cm_eff_tp:   @day_pdt_rpt.eff_asy_tp,
+      cm_eff_ss:   @day_pdt_rpt.eff_qlty_ss,
+      cm_eff_ph:   @day_pdt_rpt.eff_qlty_ph,
+      on_eff_cod:  @day_pdt_rpt.eff_qlty_cod,
+      on_eff_nhn:  @day_pdt_rpt.eff_qlty_nhn,
+      on_eff_tn:   @day_pdt_rpt.eff_qlty_tn,
+      on_eff_tp:   @day_pdt_rpt.eff_qlty_tp,
+	    cm_sed_cod:  @day_pdt_rpt.sed_qlty_cod,
+      cm_sed_bod:  @day_pdt_rpt.sed_qlty_bod,
+      cm_sed_nhn:  @day_pdt_rpt.sed_qlty_nhn,
+      cm_sed_tn:   @day_pdt_rpt.sed_qlty_tn,
+      cm_sed_tp:   @day_pdt_rpt.sed_qlty_tp,
+      cm_sed_ss:   @day_pdt_rpt.sed_qlty_ss,
+      cm_sed_ph:   @day_pdt_rpt.sed_qlty_ph,
+	    inflow:  @day_pdt_rpt.inflow,
+      outflow:  @day_pdt_rpt.outflow,
+      power:  @day_pdt_rpt.power,
+      inmud:  @day_pdt_rpt.inmud,
+      outmud:  @day_pdt_rpt.outmud,
+      mst:  @day_pdt_rpt.mst,
+      md:  @day_pdt_rpt.mdflow,
+      mdrcy:  @day_pdt_rpt.mdrcy,
+      mdsell:  @day_pdt_rpt.mdsell,
+      desc:  @day_pdt_rpt.day_pdt.desc || '',          
       chemicals:  chemicals,
-      tspmuds:  tspmuds
+      tspmuds:  tspmuds,
+      day_stc: @day_rpt_stc
     }
 
     respond_to do |f|
