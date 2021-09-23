@@ -1,7 +1,5 @@
 class MthPdtRptsController < ApplicationController
-  layout "application_control"
-  before_filter :authenticate_user!
-  authorize_resource :except => [:download_append, :produce_report]
+  skip_before_action :verify_authenticity_token
 
   include MathCube 
   include CreateMthPdtRpt 
@@ -33,10 +31,10 @@ class MthPdtRptsController < ApplicationController
 
     
     @factories.each do |factory|
-      @mth_pdt_rpts = factory.mth_pdt_rpts.where('state != ?', Setting.mth_pdt_rpts.complete).order('pdt_date DESC')
+      @mth_pdt_rpts = factory.mth_pdt_rpts.where('state != ?', Setting.mth_pdt_rpts.complete).order('start_date DESC')
       @mth_pdt_rpts.each do |mth_pdt_rpt|
         results << {
-          name: mth_pdt_rpt.pdt_date.to_s + factory.name,
+          name: mth_pdt_rpt.name,
           state: mth_pdt_rpt.state,
           fct: idencode(factory.id),
           jd: jd,
@@ -50,114 +48,112 @@ class MthPdtRptsController < ApplicationController
   end
 
   def verify_show
-    @factory = my_factory
-    @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
     user = User.find_by_number(params[:openid])
     @factory = user.factories.find(iddecode(params[:factory_id]))
     @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
     chemicals = []
     @mth_pdt_rpt.mth_chemicals.each do |chemical|
       chemicals << {
-        name    : chemicals_hash[chemical.name]
-        unprice : chemical.unprice
-        cmptc   : chemical.cmptc
-        dosage  : chemical.dosage
-        act_dos : chemical.act_dosage
-        avg_dos : chemical.avg_dosage
-        dosptc  : chemical.dosptc
-        per_cos : chemical.per_cost
+        name: chemicals_hash[chemical.name],
+        unprice: chemical.unprice,
+        cmptc: chemical.cmptc,
+        dosage: chemical.dosage,
+        act_dos: chemical.act_dosage,
+        avg_dos: chemical.avg_dosage,
+        dosptc: chemical.dosptc,
+        per_cost: chemical.per_cost
       }
     end
 
     inf = {
-      cod: @mth_pdt_rpt.month_cod.avg_inf
-      bod: @mth_pdt_rpt.month_bod.avg_inf
-      nhn: @mth_pdt_rpt.month_nhn.avg_inf
-      tn: @mth_pdt_rpt.month_tn.avg_inf
-      tp: @mth_pdt_rpt.month_tp.avg_inf
+      cod: @mth_pdt_rpt.month_cod.avg_inf,
+      bod: @mth_pdt_rpt.month_bod.avg_inf,
+      nhn: @mth_pdt_rpt.month_nhn.avg_inf,
+      tn: @mth_pdt_rpt.month_tn.avg_inf,
+      tp: @mth_pdt_rpt.month_tp.avg_inf,
       ss: @mth_pdt_rpt.month_ss.avg_inf
     }
     eff = {
-      cod: @mth_pdt_rpt.month_cod.avg_eff
-      bod: @mth_pdt_rpt.month_bod.avg_eff
-      nhn: @mth_pdt_rpt.month_nhn.avg_eff
-      tn: @mth_pdt_rpt.month_tn.avg_eff
-      tp: @mth_pdt_rpt.month_tp.avg_eff
+      cod: @mth_pdt_rpt.month_cod.avg_eff,
+      bod: @mth_pdt_rpt.month_bod.avg_eff,
+      nhn: @mth_pdt_rpt.month_nhn.avg_eff,
+      tn: @mth_pdt_rpt.month_tn.avg_eff,
+      tp: @mth_pdt_rpt.month_tp.avg_eff,
       ss: @mth_pdt_rpt.month_ss.avg_eff
     }
     emr = {
-      cod: @mth_pdt_rpt.month_cod.emr
-      bod: @mth_pdt_rpt.month_bod.emr
-      nhn: @mth_pdt_rpt.month_nhn.emr
-      tn: @mth_pdt_rpt.month_tn.emr
-      tp: @mth_pdt_rpt.month_tp.emr
+      cod: @mth_pdt_rpt.month_cod.emr,
+      bod: @mth_pdt_rpt.month_bod.emr,
+      nhn: @mth_pdt_rpt.month_nhn.emr,
+      tn: @mth_pdt_rpt.month_tn.emr,
+      tp: @mth_pdt_rpt.month_tp.emr,
       ss: @mth_pdt_rpt.month_ss.emr
     }
     avg_emq = {
-      cod: @mth_pdt_rpt.month_cod.avg_emq
-      bod: @mth_pdt_rpt.month_bod.avg_emq
-      nhn: @mth_pdt_rpt.month_nhn.avg_emq
-      tn: @mth_pdt_rpt.month_tn.avg_emq
-      tp: @mth_pdt_rpt.month_tp.avg_emq
+      cod: @mth_pdt_rpt.month_cod.avg_emq,
+      bod: @mth_pdt_rpt.month_bod.avg_emq,
+      nhn: @mth_pdt_rpt.month_nhn.avg_emq,
+      tn: @mth_pdt_rpt.month_tn.avg_emq,
+      tp: @mth_pdt_rpt.month_tp.avg_emq,
       ss: @mth_pdt_rpt.month_ss.avg_emq
     }
     emq = {
-      cod: @mth_pdt_rpt.month_cod.emq
-      bod: @mth_pdt_rpt.month_bod.emq
-      nhn: @mth_pdt_rpt.month_nhn.emq
-      tn: @mth_pdt_rpt.month_tn.emq
-      tp: @mth_pdt_rpt.month_tp.emq
+      cod: @mth_pdt_rpt.month_cod.emq,
+      bod: @mth_pdt_rpt.month_bod.emq,
+      nhn: @mth_pdt_rpt.month_nhn.emq,
+      tn: @mth_pdt_rpt.month_tn.emq,
+      tp: @mth_pdt_rpt.month_tp.emq,
       ss: @mth_pdt_rpt.month_ss.emq
     }
     end_emq = {
-      cod: @mth_pdt_rpt.month_cod.end_emq
-      bod: @mth_pdt_rpt.month_bod.end_emq
-      nhn: @mth_pdt_rpt.month_nhn.end_emq
-      tn: @mth_pdt_rpt.month_tn.end_emq
-      tp: @mth_pdt_rpt.month_tp.end_emq
+      cod: @mth_pdt_rpt.month_cod.end_emq,
+      bod: @mth_pdt_rpt.month_bod.end_emq,
+      nhn: @mth_pdt_rpt.month_nhn.end_emq,
+      tn: @mth_pdt_rpt.month_tn.end_emq,
+      tp: @mth_pdt_rpt.month_tp.end_emq,
       ss: @mth_pdt_rpt.month_ss.end_emq
     }
     yoy = {
-      cod: @mth_pdt_rpt.month_cod.yoy
-      bod: @mth_pdt_rpt.month_bod.yoy
-      nhn: @mth_pdt_rpt.month_nhn.yoy
-      tn: @mth_pdt_rpt.month_tn.yoy
-      tp: @mth_pdt_rpt.month_tp.yoy
+      cod: @mth_pdt_rpt.month_cod.yoy,
+      bod: @mth_pdt_rpt.month_bod.yoy,
+      nhn: @mth_pdt_rpt.month_nhn.yoy,
+      tn: @mth_pdt_rpt.month_tn.yoy,
+      tp: @mth_pdt_rpt.month_tp.yoy,
       ss: @mth_pdt_rpt.month_ss.yoy
     }
     mom = {
-      cod: @mth_pdt_rpt.month_cod.mom
-      bod: @mth_pdt_rpt.month_bod.mom
-      nhn: @mth_pdt_rpt.month_nhn.mom
-      tn: @mth_pdt_rpt.month_tn.mom
-      tp: @mth_pdt_rpt.month_tp.mom
+      cod: @mth_pdt_rpt.month_cod.mom,
+      bod: @mth_pdt_rpt.month_bod.mom,
+      nhn: @mth_pdt_rpt.month_nhn.mom,
+      tn: @mth_pdt_rpt.month_tn.mom,
+      tp: @mth_pdt_rpt.month_tp.mom,
       ss: @mth_pdt_rpt.month_ss.mom
     }
     power = {
-      power: @mth_pdt_rpt.month_power.power
-      end_power: @mth_pdt_rpt.month_power.end_power
-      bom: @mth_pdt_rpt.month_power.bom
-      yoy_power: @mth_pdt_rpt.month_power.yoy_power
-      mom_power: @mth_pdt_rpt.month_power.mom_power
-      yoy_bom: @mth_pdt_rpt.month_power.yoy_bom
+      power: @mth_pdt_rpt.month_power.power,
+      end_power: @mth_pdt_rpt.month_power.end_power,
+      bom: @mth_pdt_rpt.month_power.bom,
+      yoy_power: @mth_pdt_rpt.month_power.yoy_power,
+      mom_power: @mth_pdt_rpt.month_power.mom_power,
+      yoy_bom: @mth_pdt_rpt.month_power.yoy_bom,
       mom_bom: @mth_pdt_rpt.month_power.mom_bom
     }
     mud = {
-      inmud: @mth_pdt_rpt.month_mud.inmud
-      end_inmud: @mth_pdt_rpt.month_mud.end_inmud
-      outmud: @mth_pdt_rpt.month_mud.outmud
-      end_outmud: @mth_pdt_rpt.month_mud.end_outmud
-      yoy: @mth_pdt_rpt.month_mud.yoy
+      inmud: @mth_pdt_rpt.month_mud.inmud,
+      end_inmud: @mth_pdt_rpt.month_mud.end_inmud,
+      outmud: @mth_pdt_rpt.month_mud.outmud,
+      end_outmud: @mth_pdt_rpt.month_mud.end_outmud,
+      yoy: @mth_pdt_rpt.month_mud.yoy,
       mom: @mth_pdt_rpt.month_mud.mom
     }
     md = {
-      mdrcy: @mth_pdt_rpt.month_md.mdrcy
-      end_mdrcy: @mth_pdt_rpt.month_md.end_mdrcy
-      mdsell: @mth_pdt_rpt.month_md.mdsell
-      end_mdsell: @mth_pdt_rpt.month_md.end_mdsell
-      yoy_mdrcy: @mth_pdt_rpt.month_md.yoy_mdrcy
-      mom_mdrcy: @mth_pdt_rpt.month_md.mom_mdrcy
-      yoy_mdsell: @mth_pdt_rpt.month_md.yoy_mdsell
+      mdrcy: @mth_pdt_rpt.month_md.mdrcy,
+      end_mdrcy: @mth_pdt_rpt.month_md.end_mdrcy,
+      mdsell: @mth_pdt_rpt.month_md.mdsell,
+      end_mdsell: @mth_pdt_rpt.month_md.end_mdsell,
+      yoy_mdrcy: @mth_pdt_rpt.month_md.yoy_mdrcy,
+      mom_mdrcy: @mth_pdt_rpt.month_md.mom_mdrcy,
+      yoy_mdsell: @mth_pdt_rpt.month_md.yoy_mdsell,
       mom_mdsell: @mth_pdt_rpt.month_md.mom_mdsell
     }
 
@@ -176,6 +172,7 @@ class MthPdtRptsController < ApplicationController
       mom: mom,
       md: md,
       mud: mud,
+      chemicals: chemicals, 
       power: power
     }
     respond_to do |f|
