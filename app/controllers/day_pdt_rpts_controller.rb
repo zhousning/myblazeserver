@@ -1,25 +1,108 @@
 class DayPdtRptsController < ApplicationController
-  layout "application_control"
-  before_filter :authenticate_user!
-  authorize_resource
+  skip_before_action :verify_authenticity_token
   
   include MathCube
   include QuotaConfig 
   include ChartConfig 
 
   def index
-    @factory = my_factory
-   
-    @day_pdt_rpts = @factory.day_pdt_rpts.order('pdt_date DESC').page( params[:page]).per( Setting.systems.per_page )  if @factory
-   
+    results = []
+    user = User.find_by_number(params[:openid])
+    @factories = user.factories
+
+    @factories.each do |factory|
+      @day_pdt_rpts = factory.day_pdt_rpts.last(3).order('pdt_date DESC')
+      @day_pdt_rpts.each do |day_pdt_rpt|
+        results << {
+          name: day_pdt_rpt.pdt_date.to_s + factory.name,
+          fct: idencode(factory.id),
+          day_pdt: idencode(day_pdt_rpt.id)
+        }
+      end
+    end
+    respond_to do |f|
+      f.json{ render :json => {:results => results}.to_json}
+    end
   end
    
   def show
-    @factory = my_factory
-   
+    user = User.find_by_number(params[:openid])
+    @factory = user.factories.find(iddecode(params[:factory_id]))
     @day_pdt_rpt = @factory.day_pdt_rpts.find(iddecode(params[:id]))
-
     @day_rpt_stc = @day_pdt_rpt.day_rpt_stc
+
+    inf = @day_pdt.inf_qlty
+    eff = @day_pdt.eff_qlty
+    sed = @day_pdt.sed_qlty
+    pdt_sum = @day_pdt.pdt_sum
+    chemicals = []
+    @day_pdt_rpt.chemicals.each do |chemical|
+      chemicals << {
+        name: chemicals_hash[chemical.name],
+        unprice: chemical.unprice,
+        cmptc: chemical.cmptc,
+        dosage: chemical.dosage
+      }
+    end
+    tspmuds = []
+    @day_pdt_rpt.tspmuds.each do |tspmud|
+      tspmuds << {
+        name: mudfcts_hash(@factory)[tspmud.dealer],
+        tspvum: tspmud.tspvum,
+        rcpvum: tspmud.rcpvum,
+        price: tspmud.price,
+        prtmtd: tspmud.prtmtd
+      }
+    end
+
+	  results = { 
+      state: @day_pdt.state,
+      cm_inf_cod:  inf.cod,
+      cm_inf_bod:  inf.bod,
+      cm_inf_nhn:  inf.nhn,
+      cm_inf_tn:  inf.tn,
+      cm_inf_tp:  inf.tp,
+      cm_inf_ss:  inf.ss,
+      cm_inf_ph:  inf.ph,
+      on_inf_cod:  inf.asy_cod,
+      on_inf_nhn:  inf.asy_nhn,
+      on_inf_tn:  inf.asy_tn,
+      on_inf_tp:  inf.asy_tp,
+	    cm_eff_cod:  eff.cod,
+      cm_eff_bod:  eff.bod,
+      cm_eff_nhn:  eff.nhn,
+      cm_eff_tn:  eff.tn,
+      cm_eff_tp:  eff.tp,
+      cm_eff_ss:  eff.ss,
+      cm_eff_ph:  eff.ph,
+      on_eff_cod:  eff.asy_cod,
+      on_eff_nhn:  eff.asy_nhn,
+      on_eff_tn:  eff.asy_tn,
+      on_eff_tp:  eff.asy_tp,
+	    cm_sed_cod:  sed.cod,
+      cm_sed_bod:  sed.bod,
+      cm_sed_nhn:  sed.nhn,
+      cm_sed_tn:  sed.tn,
+      cm_sed_tp:  sed.tp,
+      cm_sed_ss:  sed.ss,
+      cm_sed_ph:  sed.ph,
+	    inflow:  pdt_sum.inflow,
+      outflow:  pdt_sum.outflow,
+      power:  pdt_sum.power,
+      inmud:  pdt_sum.inmud,
+      outmud:  pdt_sum.outmud,
+      mst:  pdt_sum.mst,
+      md:  pdt_sum.mdflow,
+      mdrcy:  pdt_sum.mdrcy,
+      mdsell:  pdt_sum.mdsell,
+      desc:  @day_pdt_rpt.desc || '',          
+      chemicals:  chemicals,
+      tspmuds:  tspmuds
+    }
+
+    respond_to do |f|
+      f.json{ render :json => {:results => results}.to_json}
+    end
   end
    
   #时间区间内单厂多指标 数据立方
