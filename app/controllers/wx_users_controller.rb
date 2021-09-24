@@ -16,15 +16,15 @@ class WxUsersController < ApplicationController
       #厂区领导 3
       #集团运营集团管理者 4
       jd = nil
-      if user.has_role?(Setting.roles.day_pdt_verify) 
+      if resource.has_role?(Setting.roles.day_pdt_verify) 
         jd = 0
-      elsif user.has_role?(Setting.roles.day_pdt_cmp_verify) 
+      elsif resource.has_role?(Setting.roles.day_pdt_cmp_verify) 
         jd = 1
-      elsif user.has_role?(Setting.roles.day_pdt) 
+      elsif resource.has_role?(Setting.roles.day_pdt) 
         jd = 2 
-      elsif user.has_role?(Setting.roles.role_fct) 
+      elsif resource.has_role?(Setting.roles.role_fct) 
         jd = 3
-      elsif user.has_role?(Setting.roles.role_grp) 
+      elsif resource.has_role?(Setting.roles.role_grp) 
         jd = 4
       end
       return render :json => {:success => true, :openid => openid, :user_name => user_name, :jd => jd}
