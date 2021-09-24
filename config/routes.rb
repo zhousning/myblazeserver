@@ -30,8 +30,10 @@ Rails.application.routes.draw do
   resources :mth_pdt_rpts, :only => [:index] do
     get :verify_index, :on => :collection
   end
-  resources :day_pdt_rpts, :only => [:index]
-  #resources :factories, :only => [:edit, :update] do
+  resources :day_pdt_rpts, :only => [:index] do 
+    get :query, :on => :collection
+  end
+  resources :factories, :only => [:index]
   #  resources :day_pdts, :only => [:index, :show] do
   resources :factories, :only => [] do
     resources :day_pdts, :only => [] do

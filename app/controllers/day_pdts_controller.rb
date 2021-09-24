@@ -10,6 +10,7 @@ class DayPdtsController < ApplicationController
     user = User.find_by_number(params[:openid])
     @factories = user.factories
 
+
     @factories.each do |factory|
       @day_pdts = factory.day_pdts.where('state != ?', Setting.day_pdts.complete).order('pdt_date DESC')
       @day_pdts.each do |day_pdt|
