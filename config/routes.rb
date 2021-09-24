@@ -27,9 +27,10 @@ Rails.application.routes.draw do
   resources :day_pdts, :only => [] do
     get :verify_index, :on => :collection
   end
-  resources :mth_pdt_rpts, :only => [] do
+  resources :mth_pdt_rpts, :only => [:index] do
     get :verify_index, :on => :collection
   end
+  resources :day_pdt_rpts, :only => [:index]
   #resources :factories, :only => [:edit, :update] do
   #  resources :day_pdts, :only => [:index, :show] do
   resources :factories, :only => [] do
@@ -65,10 +66,10 @@ Rails.application.routes.draw do
     #  get :xls_mth_download, :on => :member
     #  get :download_append, :on => :member
     end
-    #resources :day_pdt_rpts, :only => [:index, :show] do
-    #  get :produce_report, :on => :member
-    #  get :xls_day_download, :on => :member
-    #end
+    resources :day_pdt_rpts, :only => [ :show] do
+      #get :produce_report, :on => :member
+      #get :xls_day_download, :on => :member
+    end
     #resources :analyses, :only => [] do
     #  get :month_compare, :on => :collection
     #end

@@ -14,22 +14,31 @@ class MthPdtRptsController < ApplicationController
     end
   end
 
+  def index
+    results = []
+    user = User.find_by_number(params[:openid])
+    @factories = user.factories
+
+    @factories.each do |factory|
+      @mth_pdt_rpts = factory.mth_pdt_rpts.where('state = ?', Setting.mth_pdt_rpts.complete).order('start_date DESC')
+      @mth_pdt_rpts.each do |mth_pdt_rpt|
+        results << {
+          name: mth_pdt_rpt.name,
+          fct: idencode(factory.id),
+          mth_pdt_rpt: idencode(mth_pdt_rpt.id)
+        }
+      end
+    end
+    respond_to do |f|
+      f.json{ render :json => {:results => results}.to_json}
+    end
+  end
+
   def verify_index
     results = []
     user = User.find_by_number(params[:openid])
     @factories = user.factories
 
-    #角色代码jd厂区月报表审核 0 公司月报表审核 1 厂区月报表填报 2 
-    jd = nil
-    if user.has_role?(Setting.roles.mth_pdt_rpt_verify) 
-      jd = 0
-    elsif user.has_role?(Setting.roles.mth_pdt_rpt_cmp_verify) 
-      jd = 1
-    elsif user.has_role?(Setting.roles.mth_pdt_rpt) 
-      jd = 2 
-    end
-
-    
     @factories.each do |factory|
       @mth_pdt_rpts = factory.mth_pdt_rpts.where('state != ?', Setting.mth_pdt_rpts.complete).order('start_date DESC')
       @mth_pdt_rpts.each do |mth_pdt_rpt|
@@ -37,7 +46,6 @@ class MthPdtRptsController < ApplicationController
           name: mth_pdt_rpt.name,
           state: mth_pdt_rpt.state,
           fct: idencode(factory.id),
-          jd: jd,
           mth_pdt_rpt: idencode(mth_pdt_rpt.id)
         }
       end
@@ -277,15 +285,6 @@ class MthPdtRptsController < ApplicationController
   def cmp_verify_show
     @factory = my_factory
     @mth_pdt_rpt = @factory.mth_pdt_rpts.find(iddecode(params[:id]))
-  end
-
-  def index
-    @mth_pdt_rpt = MthPdtRpt.new
-    @factory = my_factory
-   
-    @months = months
-    @mth_pdt_rpts = @factory.mth_pdt_rpts.where(:state => [Setting.mth_pdt_rpts.ongoing, Setting.mth_pdt_rpts.verifying, Setting.mth_pdt_rpts.rejected, Setting.mth_pdt_rpts.cmp_verifying, Setting.mth_pdt_rpts.cmp_rejected]).order('start_date DESC').page( params[:page]).per( Setting.systems.per_page )  if @factory
-   
   end
 
   def show

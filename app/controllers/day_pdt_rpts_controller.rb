@@ -11,7 +11,7 @@ class DayPdtRptsController < ApplicationController
     @factories = user.factories
 
     @factories.each do |factory|
-      @day_pdt_rpts = factory.day_pdt_rpts.last(3).order('pdt_date DESC')
+      @day_pdt_rpts = factory.day_pdt_rpts.order('pdt_date').last(3)
       @day_pdt_rpts.each do |day_pdt_rpt|
         results << {
           name: day_pdt_rpt.pdt_date.to_s + factory.name,
@@ -29,7 +29,7 @@ class DayPdtRptsController < ApplicationController
     user = User.find_by_number(params[:openid])
     @factory = user.factories.find(iddecode(params[:factory_id]))
     @day_pdt_rpt = @factory.day_pdt_rpts.find(iddecode(params[:id]))
-    @day_rpt_stc = @day_pdt_rpt.day_rpt_stc
+    #@day_rpt_stc = @day_pdt_rpt.day_rpt_stc
 
     chemicals = []
     @day_pdt_rpt.chemicals.each do |chemical|
@@ -52,6 +52,7 @@ class DayPdtRptsController < ApplicationController
     end
 
 	  results = { 
+      state: nil,
       cm_inf_cod:  @day_pdt_rpt.inf_asy_cod,
       cm_inf_bod:  @day_pdt_rpt.inf_qlty_bod,
       cm_inf_nhn:  @day_pdt_rpt.inf_asy_nhn,
@@ -92,8 +93,7 @@ class DayPdtRptsController < ApplicationController
       mdsell:  @day_pdt_rpt.mdsell,
       desc:  @day_pdt_rpt.day_pdt.desc || '',          
       chemicals:  chemicals,
-      tspmuds:  tspmuds,
-      day_stc: @day_rpt_stc
+      tspmuds:  tspmuds
     }
 
     respond_to do |f|
