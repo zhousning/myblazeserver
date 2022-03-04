@@ -10,17 +10,7 @@ class DayPdtsController < ApplicationController
     user = User.find_by_number(params[:openid])
     @factories = user.factories
 
-    #角色代码jd厂区运营数据审核 0 公司运营数据审核 1 厂区运营数据填报 2 
-    jd = nil
-    if user.has_role?(Setting.roles.day_pdt_verify) 
-      jd = 0
-    elsif user.has_role?(Setting.roles.day_pdt_cmp_verify) 
-      jd = 1
-    elsif user.has_role?(Setting.roles.day_pdt) 
-      jd = 2 
-    end
 
-    
     @factories.each do |factory|
       @day_pdts = factory.day_pdts.where('state != ?', Setting.day_pdts.complete).order('pdt_date DESC')
       @day_pdts.each do |day_pdt|
@@ -28,7 +18,6 @@ class DayPdtsController < ApplicationController
           name: day_pdt.pdt_date.to_s + factory.name,
           state: day_pdt.state,
           fct: idencode(factory.id),
-          jd: jd,
           day_pdt: idencode(day_pdt.id)
         }
       end

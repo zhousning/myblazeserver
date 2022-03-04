@@ -11,7 +11,7 @@ class DayPdtRptsController < ApplicationController
     @factories = user.factories
 
     @factories.each do |factory|
-      @day_pdt_rpts = factory.day_pdt_rpts.last(3).order('pdt_date DESC')
+      @day_pdt_rpts = factory.day_pdt_rpts.order('pdt_date').last(3)
       @day_pdt_rpts.each do |day_pdt_rpt|
         results << {
           name: day_pdt_rpt.pdt_date.to_s + factory.name,
@@ -25,82 +25,40 @@ class DayPdtRptsController < ApplicationController
     end
   end
    
+  def query 
+    results = []
+    user = User.find_by_number(params[:openid])
+    pdt_date = params[:date]
+    @factories = user.factories
+
+    @factories.each do |factory|
+      day_pdt_rpt = factory.day_pdt_rpts.where(:pdt_date => pdt_date).first
+      if day_pdt_rpt
+        results << {
+          name: day_pdt_rpt.pdt_date.to_s + factory.name,
+          fct: idencode(factory.id),
+          day_pdt: idencode(day_pdt_rpt.id)
+        }
+      end
+    end
+    respond_to do |f|
+      f.json{ render :json => {:results => results}.to_json}
+    end
+  end
+
   def show
     user = User.find_by_number(params[:openid])
     @factory = user.factories.find(iddecode(params[:factory_id]))
     @day_pdt_rpt = @factory.day_pdt_rpts.find(iddecode(params[:id]))
-    @day_rpt_stc = @day_pdt_rpt.day_rpt_stc
-
-    chemicals = []
-    @day_pdt_rpt.chemicals.each do |chemical|
-      chemicals << {
-        name: chemicals_hash[chemical.name],
-        unprice: chemical.unprice,
-        cmptc: chemical.cmptc,
-        dosage: chemical.dosage
-      }
-    end
-    tspmuds = []
-    @day_pdt_rpt.tspmuds.each do |tspmud|
-      tspmuds << {
-        name: mudfcts_hash(@factory)[tspmud.dealer],
-        tspvum: tspmud.tspvum,
-        rcpvum: tspmud.rcpvum,
-        price: tspmud.price,
-        prtmtd: tspmud.prtmtd
-      }
-    end
-
-	  results = { 
-      cm_inf_cod:  @day_pdt_rpt.inf_asy_cod,
-      cm_inf_bod:  @day_pdt_rpt.inf_qlty_bod,
-      cm_inf_nhn:  @day_pdt_rpt.inf_asy_nhn,
-      cm_inf_tn:   @day_pdt_rpt.inf_asy_tn,
-      cm_inf_tp:   @day_pdt_rpt.inf_asy_tp,
-      cm_inf_ss:   @day_pdt_rpt.inf_qlty_ss,
-      cm_inf_ph:   @day_pdt_rpt.inf_qlty_ph,
-      on_inf_cod:  @day_pdt_rpt.inf_qlty_cod,
-      on_inf_nhn:  @day_pdt_rpt.inf_qlty_nhn,
-      on_inf_tn:   @day_pdt_rpt.inf_qlty_tn,
-      on_inf_tp:   @day_pdt_rpt.inf_qlty_tp,
-	    cm_eff_cod:  @day_pdt_rpt.eff_asy_cod,
-      cm_eff_bod:  @day_pdt_rpt.eff_qlty_bod,
-      cm_eff_nhn:  @day_pdt_rpt.eff_asy_nhn,
-      cm_eff_tn:   @day_pdt_rpt.eff_asy_tn,
-      cm_eff_tp:   @day_pdt_rpt.eff_asy_tp,
-      cm_eff_ss:   @day_pdt_rpt.eff_qlty_ss,
-      cm_eff_ph:   @day_pdt_rpt.eff_qlty_ph,
-      on_eff_cod:  @day_pdt_rpt.eff_qlty_cod,
-      on_eff_nhn:  @day_pdt_rpt.eff_qlty_nhn,
-      on_eff_tn:   @day_pdt_rpt.eff_qlty_tn,
-      on_eff_tp:   @day_pdt_rpt.eff_qlty_tp,
-	    cm_sed_cod:  @day_pdt_rpt.sed_qlty_cod,
-      cm_sed_bod:  @day_pdt_rpt.sed_qlty_bod,
-      cm_sed_nhn:  @day_pdt_rpt.sed_qlty_nhn,
-      cm_sed_tn:   @day_pdt_rpt.sed_qlty_tn,
-      cm_sed_tp:   @day_pdt_rpt.sed_qlty_tp,
-      cm_sed_ss:   @day_pdt_rpt.sed_qlty_ss,
-      cm_sed_ph:   @day_pdt_rpt.sed_qlty_ph,
-	    inflow:  @day_pdt_rpt.inflow,
-      outflow:  @day_pdt_rpt.outflow,
-      power:  @day_pdt_rpt.power,
-      inmud:  @day_pdt_rpt.inmud,
-      outmud:  @day_pdt_rpt.outmud,
-      mst:  @day_pdt_rpt.mst,
-      md:  @day_pdt_rpt.mdflow,
-      mdrcy:  @day_pdt_rpt.mdrcy,
-      mdsell:  @day_pdt_rpt.mdsell,
-      desc:  @day_pdt_rpt.day_pdt.desc || '',          
-      chemicals:  chemicals,
-      tspmuds:  tspmuds,
-      day_stc: @day_rpt_stc
-    }
+    #@day_rpt_stc = @day_pdt_rpt.day_rpt_stc
+    
+    results = day_pdt_rpt_result(@day_pdt_rpt)
 
     respond_to do |f|
       f.json{ render :json => {:results => results}.to_json}
     end
   end
-   
+
   #时间区间内单厂多指标 数据立方
   def sglfct_statistic
     @factories = current_user.factories
@@ -384,5 +342,74 @@ class DayPdtRptsController < ApplicationController
       end
       static_pool
     end
+
+    def day_pdt_rpt_result(day_pdt_rpt)
+      chemicals = []
+      day_pdt_rpt.chemicals.each do |chemical|
+        chemicals << {
+          name: chemicals_hash[chemical.name],
+          unprice: chemical.unprice,
+          cmptc: chemical.cmptc,
+          dosage: chemical.dosage
+        }
+      end
+      tspmuds = []
+      day_pdt_rpt.tspmuds.each do |tspmud|
+        tspmuds << {
+          name: mudfcts_hash(@factory)[tspmud.dealer],
+          tspvum: tspmud.tspvum,
+          rcpvum: tspmud.rcpvum,
+          price: tspmud.price,
+          prtmtd: tspmud.prtmtd
+        }
+      end
+
+	    result = { 
+        state: nil,
+        cm_inf_cod:  day_pdt_rpt.inf_asy_cod,
+        cm_inf_bod:  day_pdt_rpt.inf_qlty_bod,
+        cm_inf_nhn:  day_pdt_rpt.inf_asy_nhn,
+        cm_inf_tn:   day_pdt_rpt.inf_asy_tn,
+        cm_inf_tp:   day_pdt_rpt.inf_asy_tp,
+        cm_inf_ss:   day_pdt_rpt.inf_qlty_ss,
+        cm_inf_ph:   day_pdt_rpt.inf_qlty_ph,
+        on_inf_cod:  day_pdt_rpt.inf_qlty_cod,
+        on_inf_nhn:  day_pdt_rpt.inf_qlty_nhn,
+        on_inf_tn:   day_pdt_rpt.inf_qlty_tn,
+        on_inf_tp:   day_pdt_rpt.inf_qlty_tp,
+	      cm_eff_cod:  day_pdt_rpt.eff_asy_cod,
+        cm_eff_bod:  day_pdt_rpt.eff_qlty_bod,
+        cm_eff_nhn:  day_pdt_rpt.eff_asy_nhn,
+        cm_eff_tn:   day_pdt_rpt.eff_asy_tn,
+        cm_eff_tp:   day_pdt_rpt.eff_asy_tp,
+        cm_eff_ss:   day_pdt_rpt.eff_qlty_ss,
+        cm_eff_ph:   day_pdt_rpt.eff_qlty_ph,
+        on_eff_cod:  day_pdt_rpt.eff_qlty_cod,
+        on_eff_nhn:  day_pdt_rpt.eff_qlty_nhn,
+        on_eff_tn:   day_pdt_rpt.eff_qlty_tn,
+        on_eff_tp:   day_pdt_rpt.eff_qlty_tp,
+	      cm_sed_cod:  day_pdt_rpt.sed_qlty_cod,
+        cm_sed_bod:  day_pdt_rpt.sed_qlty_bod,
+        cm_sed_nhn:  day_pdt_rpt.sed_qlty_nhn,
+        cm_sed_tn:   day_pdt_rpt.sed_qlty_tn,
+        cm_sed_tp:   day_pdt_rpt.sed_qlty_tp,
+        cm_sed_ss:   day_pdt_rpt.sed_qlty_ss,
+        cm_sed_ph:   day_pdt_rpt.sed_qlty_ph,
+	      inflow:  day_pdt_rpt.inflow,
+        outflow: day_pdt_rpt.outflow,
+        power:  day_pdt_rpt.power,
+        inmud:  day_pdt_rpt.inmud,
+        outmud: day_pdt_rpt.outmud,
+        mst:  day_pdt_rpt.mst,
+        md:  day_pdt_rpt.mdflow,
+        mdrcy:  day_pdt_rpt.mdrcy,
+        mdsell: day_pdt_rpt.mdsell,
+        desc:  day_pdt_rpt.day_pdt.desc || '',          
+        chemicals:  chemicals,
+        tspmuds:  tspmuds
+      }
+      result
+    end
+   
 
 end

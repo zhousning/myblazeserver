@@ -1,7 +1,5 @@
 class FactoriesController < ApplicationController
-  layout "application_control"
-  before_filter :authenticate_user!
-  #load_and_authorize_resource
+  skip_before_action :verify_authenticity_token
 
 
   def bigscreen
@@ -13,9 +11,22 @@ class FactoriesController < ApplicationController
   end
    
   def index
-    @factory = Factory.new
-   
     @factories = Factory.all
+    fcts = []
+    @factories.each do |f|
+      fcts << {
+        id: idencode(f.id),
+        name: f.name
+      }
+    end
+    date = (Date.today-1).to_s
+    result = {
+      fcts: fcts,
+      date: date
+    }
+    respond_to do |f|
+      f.json{ render :json => {:result => result}.to_json}
+    end
    
   end
    
